@@ -75,7 +75,8 @@ TEST(InFile, compressedTest) {
 
 void infileComparisionTest(const char* _regName, bool _compress,
                            const std::string& _contents, u64 _blockSize,
-                           const std::vector<std::string>& _lines) {
+                           const std::vector<std::string>& _lines,
+                           bool _verbose = false) {
   std::string fr = _regName;
   std::string fc = fr + ".gz";
   fio::InFile* infile;
@@ -106,10 +107,14 @@ void infileComparisionTest(const char* _regName, bool _compress,
     }
     if (sts == fio::InFile::Status::OK) {
       lines.push_back(line);
+      if (_verbose) {
+        printf("LINE: '%s'\n", line.c_str());
+      }
     }
   }
 
   ASSERT_EQ(lines.size(), _lines.size());
+  assert(lines.size() == _lines.size());
   for (u32 idx = 0; idx < lines.size(); idx++) {
     ASSERT_EQ(lines.at(idx), _lines.at(idx));
   }
@@ -123,9 +128,23 @@ void infileComparisionTest(const char* _regName, bool _compress,
   ASSERT_FALSE(exists(fc.c_str()));
 }
 
+TEST(InFile, single) {
+  for (u8 compress = 0; compress < 1; compress++) {
+    for (u64 blockSize = 10; blockSize < 11; blockSize++) {
+      infileComparisionTest(
+          "/tmp/myoutfile.txt",
+          compress,
+          "hello\nworld\n\n\ntail",
+          blockSize,
+          std::vector<std::string>({"hello", "world", "", "", "tail"}),
+          false);
+    }
+  }
+}
+
 TEST(InFile, simple) {
   for (u8 compress = 0; compress < 2; compress++) {
-    for (u64 blockSize = 10; blockSize < 100; blockSize++) {
+    for (u64 blockSize = 10; blockSize < 123; blockSize++) {
       infileComparisionTest(
           "/tmp/myoutfile.txt",
           compress,

@@ -50,7 +50,12 @@ InFile::InFile(const std::string& _filepath, char _delim, u64 _blockSize)
     gzFile_ = gzopen(_filepath.c_str(), "rb");
     error_ = (gzFile_ == nullptr);
   } else {
-    regFile_ = fopen(_filepath.c_str(), "rb");
+    stdin_ = _filepath == "-";
+    if (stdin_) {
+      regFile_ = stdin;
+    } else {
+      regFile_ = fopen(_filepath.c_str(), "rb");
+    }
     error_ = (regFile_ == nullptr);
   }
 
@@ -65,10 +70,10 @@ InFile::InFile(const std::string& _filepath, char _delim, u64 _blockSize)
 InFile::~InFile() {
   if (compress_) {
     gzclose(gzFile_);
-  } else {
+  } else if (!stdin_) {
     fclose(regFile_);
   }
-  delete buf_;
+  delete[] buf_;
 }
 
 bool InFile::compressed() const {
@@ -120,6 +125,7 @@ InFile::Status InFile::getLine(std::string* _line) {
     if (read == 0) {
       eof_ = true;
       buf_[next_] = '\n';
+      count_++;
       done = count_ == 0;
     } else {
       // advance buffer
@@ -140,7 +146,7 @@ InFile::Status InFile::getLine(std::string* _line) {
     }
     _line->clear();
     *_line = ss_.str();
-    count_ -= _line->size();
+    count_ -= (_line->size() + 1);
     start_ = (end + 1) % blockSize_;
     return Status::OK;
   }

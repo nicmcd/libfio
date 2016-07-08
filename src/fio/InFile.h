@@ -60,6 +60,7 @@ class InFile {
  private:
   bool error_;
   bool compress_;
+  bool stdin_;
   FILE* regFile_;
   gzFile gzFile_;
   const char delim_;
