@@ -52,7 +52,7 @@ class InFile {
   InFile(const std::string& _filepath,
          char _delim = kDefaultDelim,
          u64 _blockSize = kDefaultBlockSize);
-  ~InFile();
+  virtual ~InFile();
 
   bool compressed() const;
   Status getLine(std::string* _line);

@@ -41,7 +41,7 @@ class OutFile {
  public:
   explicit OutFile(const char* _filepath);
   explicit OutFile(const std::string& _filepath);
-  ~OutFile();
+  virtual ~OutFile();
 
   bool compressed() const;
   void write(const std::string& _text);
