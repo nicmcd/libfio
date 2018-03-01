@@ -16,7 +16,7 @@ LINT_FLAGS     :=
 #--------------------- Unit Tests ---------------------------------------------#
 TEST_SUFFIX    := _TEST
 GTEST_BASE     := $(HOME)/.makeccpp/gtest
-GTEST_PARALLEL := $(HOME)/.makeccpp/gtest-parallel
+GTEST_PARALLEL := # tests can't run in parallel for this
 
 #--------------------- Compilation and Linking --------------------------------#
 CXX            := g++
