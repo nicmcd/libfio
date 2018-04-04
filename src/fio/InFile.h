@@ -58,7 +58,6 @@ class InFile {
   Status getLine(std::string* _line);
 
  private:
-  bool error_;
   bool compress_;
   bool stdin_;
   FILE* regFile_;

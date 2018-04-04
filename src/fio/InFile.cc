@@ -33,6 +33,8 @@
 #include <prim/prim.h>
 
 #include <cassert>
+#include <cerrno>
+#include <cstring>
 
 namespace fio {
 
@@ -45,18 +47,25 @@ InFile::InFile(const std::string& _filepath, char _delim, u64 _blockSize)
   assert(namelen > 0);
   compress_ = _filepath.substr(namelen-3) == ".gz";
 
-  error_ = false;
   if (compress_) {
     gzFile_ = gzopen(_filepath.c_str(), "rb");
-    error_ = (gzFile_ == nullptr);
+    if (!gzFile_) {
+      fprintf(stderr, "gzopen of %s failed: %s.\n", _filepath.c_str(),
+              strerror(errno));
+      assert(false);
+    }
   } else {
     stdin_ = _filepath == "-";
     if (stdin_) {
       regFile_ = stdin;
     } else {
       regFile_ = fopen(_filepath.c_str(), "rb");
+      if (!regFile_) {
+        fprintf(stderr, "fopen of %s failed: %s.\n", _filepath.c_str(),
+                strerror(errno));
+        assert(false);
+      }
     }
-    error_ = (regFile_ == nullptr);
   }
 
   buf_ = new char[blockSize_ + 1];
@@ -131,6 +140,7 @@ InFile::Status InFile::getLine(std::string* _line) {
       // advance buffer
       count_ += read;
       next_ = (next_ + read) % blockSize_;
+      assert(count_ <= blockSize_);
     }
   }
 
