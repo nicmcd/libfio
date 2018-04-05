@@ -70,9 +70,6 @@ InFile::InFile(const std::string& _filepath, char _delim, u64 _blockSize)
 
   buf_ = new char[blockSize_ + 1];
   buf_[blockSize_] = '\0';
-  count_ = 0;
-  start_ = 0;
-  next_ = 0;
   eof_ = false;
 }
 
@@ -90,76 +87,68 @@ bool InFile::compressed() const {
 }
 
 InFile::Status InFile::getLine(std::string* _line) {
-  if (eof_) {
+  if (eof_ && queue_.size() == 0) {
     return Status::END;
   }
 
-  assert(count_ < blockSize_);
-
-  // read until full or delim found
-  u64 end = U64_MAX;
+  // read until end of line of end of file
   bool done = false;
   while (!done) {
-    // search for the delimiter in the buffer
-    for (u64 cnt = 0; cnt < count_; cnt++) {
-      u64 idx = (start_ + cnt) % blockSize_;
-      if (buf_[idx] == delim_) {
-        buf_[idx] = '\0';
-        end = idx;
+    // inspect all queue chars
+    while (!done && queue_.size() > 0) {
+      char c = queue_.front();
+      queue_.pop();
+      if (c == delim_) {
         done = true;
-        break;
+      } else {
+        stream_.put(c);
       }
     }
-    if (done || eof_) {
+    if (eof_ && !done) {
+      done = true;
+    }
+    if (done) {
       break;
     }
-
-    // determine how much data to ask for
-    u64 ask = (next_ < start_) ? (blockSize_ - count_) : (blockSize_ - next_);
-    assert(ask > 0);
+    assert(!eof_);
 
     // read data from file
     u64 read;
     if (compress_) {
-      s64 bytesRead = gzread(gzFile_, &buf_[next_], ask);
+      s64 bytesRead = gzread(gzFile_, buf_, blockSize_);
       assert(bytesRead > 0 || (bytesRead == 0 && gzeof(gzFile_)));
       read = (u64)bytesRead;
     } else {
-      u64 bytesRead = fread(&buf_[next_], 1, ask, regFile_);
+      u64 bytesRead = fread(buf_, 1, blockSize_, regFile_);
       assert(bytesRead > 0 || feof(regFile_));
       read = bytesRead;
     }
 
-    // handle buffered data
+    // transfer all chars into streams
+    for (u64 c = 0; c < read; c++) {
+      if (!done) {
+        if (buf_[c] != delim_) {
+          stream_.put(buf_[c]);
+        } else {
+          done = true;
+        }
+      } else {
+        queue_.push(buf_[c]);
+      }
+    }
+
+    // detect eof
     if (read == 0) {
       eof_ = true;
-      buf_[next_] = '\n';
-      count_++;
-      done = count_ == 0;
-    } else {
-      // advance buffer
-      count_ += read;
-      next_ = (next_ + read) % blockSize_;
-      assert(count_ <= blockSize_);
+      done = true;
     }
   }
 
-  // copy out string
-  if (end == U64_MAX && eof_ == true) {
-    return Status::END;
-  } else {
-    assert(end < blockSize_);
-    ss_.str("");
-    ss_ << &buf_[start_];
-    if (end < start_) {
-      ss_ << &buf_[0];
-    }
-    _line->clear();
-    *_line = ss_.str();
-    count_ -= (_line->size() + 1);
-    start_ = (end + 1) % blockSize_;
-    return Status::OK;
-  }
+  // return the string
+  _line->clear();
+  *_line = stream_.str();
+  stream_.str(std::string());
+  return Status::OK;
 }
 
 }  // namespace fio

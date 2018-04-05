@@ -36,6 +36,7 @@
 
 #include <sstream>
 #include <string>
+#include <queue>
 
 namespace fio {
 
@@ -65,11 +66,9 @@ class InFile {
   const char delim_;
   const u64 blockSize_;
   char* buf_;
-  u64 count_;  // chars in buffer
-  u64 start_;  // beginning of line
-  u64 next_;  // char after line
   bool eof_;
-  std::stringstream ss_;
+  std::stringstream stream_;
+  std::queue<char> queue_;
 };
 
 }  // namespace fio
