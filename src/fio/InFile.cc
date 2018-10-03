@@ -45,7 +45,7 @@ InFile::InFile(const std::string& _filepath, char _delim, u64 _blockSize)
     : delim_(_delim), blockSize_(_blockSize) {
   u64 namelen = _filepath.size();
   assert(namelen > 0);
-  compress_ = _filepath.substr(namelen-3) == ".gz";
+  compress_ = _filepath.size() >= 3 && _filepath.substr(namelen-3) == ".gz";
 
   if (compress_) {
     gzFile_ = gzopen(_filepath.c_str(), "rb");

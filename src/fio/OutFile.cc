@@ -42,7 +42,7 @@ OutFile::OutFile(const char* _filepath)
 OutFile::OutFile(const std::string& _filepath) {
   u64 namelen = _filepath.size();
   assert(namelen > 0);
-  compress_ = _filepath.substr(namelen-3) == ".gz";
+  compress_ = _filepath.size() >= 3 && _filepath.substr(namelen-3) == ".gz";
 
   error_ = false;
   if (compress_) {
