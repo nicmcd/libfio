@@ -28,54 +28,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef FIO_INFILE_H_
-#define FIO_INFILE_H_
+#include <gtest/gtest.h>
 
-#include <prim/prim.h>
-#include <zlib.h>
-
-#include <sstream>
 #include <string>
-#include <queue>
+#include <vector>
 
-namespace fio {
+#include "fio/InFile.h"
+#include "fio/OutFile.h"
 
-const char kDefaultDelim = '\n';
-const u64 kDefaultBlockSize = 8192;
+const std::string& kContents =
+    "hello\n"
+    "  this is not a test of \n"
+    "the emergency broadcast\n"
+    "system\n";
 
-class InFile {
- public:
-  enum class Status : u8 {OK, END, ERROR};
+TEST(InOutFile, bidir) {
+  std::string contents = "";
+  for (int copy = 0; copy < 1000; copy++) {
+    contents += kContents;
+  }
 
-  InFile(const char* _filepath,
-         char _delim = kDefaultDelim,
-         u64 _blockSize = kDefaultBlockSize);
-  InFile(const std::string& _filepath,
-         char _delim = kDefaultDelim,
-         u64 _blockSize = kDefaultBlockSize);
-  virtual ~InFile();
+  std::vector<std::string> filenames({
+      "/tmp/myfile.txt", "/tmp/myfile.txt.gz"});
+  for (std::string& filename : filenames) {
+    // write to file
+    fio::OutFile::Status osts = fio::OutFile::writeFile(filename, contents);
+    ASSERT_EQ(osts, fio::OutFile::Status::OK);
 
-  bool compressed() const;
-  Status getLine(std::string* _line, bool _keepDelim = false);
+    // read from from
+    std::string readText;
+    fio::InFile::Status ists = fio::InFile::readFile(filename, &readText);
+    ASSERT_EQ(ists, fio::InFile::Status::OK);
 
-  static InFile::Status readFile(const char* _filepath,
-                                 std::string* _text);
-  static InFile::Status readFile(const std::string& _filepath,
-                                 std::string* _text);
-
- private:
-  bool compress_;
-  bool stdin_;
-  FILE* regFile_;
-  gzFile gzFile_;
-  const char delim_;
-  const u64 blockSize_;
-  char* buf_;
-  bool eof_;
-  std::stringstream stream_;
-  std::queue<char> queue_;
-};
-
-}  // namespace fio
-
-#endif  // FIO_INFILE_H_
+    // compare
+    ASSERT_EQ(readText, contents);
+  }
+}

@@ -31,6 +31,7 @@
 #ifndef FIO_OUTFILE_H_
 #define FIO_OUTFILE_H_
 
+#include <prim/prim.h>
 #include <zlib.h>
 
 #include <string>
@@ -39,15 +40,21 @@ namespace fio {
 
 class OutFile {
  public:
+  enum class Status : u8 {OK, ERROR};
+
   explicit OutFile(const char* _filepath);
   explicit OutFile(const std::string& _filepath);
   virtual ~OutFile();
 
   bool compressed() const;
-  void write(const std::string& _text);
+  OutFile::Status write(const std::string& _text);
+
+  static OutFile::Status writeFile(const char* _filepath,
+                                   const std::string& _text);
+  static OutFile::Status writeFile(const std::string& _filepath,
+                                   const std::string& _text);
 
  private:
-  bool error_;
   bool compress_;
   FILE* regFile_;
   gzFile gzFile_;

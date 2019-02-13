@@ -86,7 +86,7 @@ bool InFile::compressed() const {
   return compress_;
 }
 
-InFile::Status InFile::getLine(std::string* _line) {
+InFile::Status InFile::getLine(std::string* _line, bool _keepDelim) {
   if (eof_ && queue_.size() == 0) {
     return Status::END;
   }
@@ -99,6 +99,9 @@ InFile::Status InFile::getLine(std::string* _line) {
       char c = queue_.front();
       queue_.pop();
       if (c == delim_) {
+        if (_keepDelim) {
+          stream_.put(c);
+        }
         done = true;
       } else {
         stream_.put(c);
@@ -130,6 +133,9 @@ InFile::Status InFile::getLine(std::string* _line) {
         if (buf_[c] != delim_) {
           stream_.put(buf_[c]);
         } else {
+          if (_keepDelim) {
+            stream_.put(buf_[c]);
+          }
           done = true;
         }
       } else {
@@ -149,6 +155,31 @@ InFile::Status InFile::getLine(std::string* _line) {
   *_line = stream_.str();
   stream_.str(std::string());
   return Status::OK;
+}
+
+InFile::Status InFile::readFile(const char* _filepath, std::string* _text) {
+  return InFile::readFile(std::string(_filepath), _text);
+}
+
+InFile::Status InFile::readFile(const std::string& _filepath,
+                                std::string* _text) {
+  InFile infile(_filepath);
+
+  *_text = "";
+  while (true) {
+    std::string line;
+    InFile::Status sts = infile.getLine(&line, true);
+    if (sts == InFile::Status::ERROR) {
+      return sts;
+    } else {
+      (*_text) += line;
+      if (sts == InFile::Status::END) {
+        break;
+      }
+      assert(sts == InFile::Status::OK);  // REMOVE ME
+    }
+  }
+  return InFile::Status::OK;
 }
 
 }  // namespace fio

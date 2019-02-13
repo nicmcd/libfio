@@ -44,13 +44,12 @@ OutFile::OutFile(const std::string& _filepath) {
   assert(namelen > 0);
   compress_ = _filepath.size() >= 3 && _filepath.substr(namelen-3) == ".gz";
 
-  error_ = false;
   if (compress_) {
     gzFile_ = gzopen(_filepath.c_str(), "wb");
-    error_ = (gzFile_ == nullptr);
+    assert(gzFile_ != nullptr);
   } else {
     regFile_ = fopen(_filepath.c_str(), "wb");
-    error_ = (regFile_ == nullptr);
+    assert(regFile_ != nullptr);
   }
 }
 
@@ -66,7 +65,7 @@ bool OutFile::compressed() const {
   return compress_;
 }
 
-void OutFile::write(const std::string& _text) {
+OutFile::Status OutFile::write(const std::string& _text) {
   const void* cstr = reinterpret_cast<const void*>(_text.c_str());
   size_t len = _text.size();
 
@@ -75,6 +74,19 @@ void OutFile::write(const std::string& _text) {
   } else {
     assert(fwrite(cstr, sizeof(char), len, regFile_) == len);
   }
+
+  return OutFile::Status::OK;
+}
+
+OutFile::Status OutFile::writeFile(const char* _filepath,
+                                   const std::string& _text) {
+  return OutFile::writeFile(std::string(_filepath), _text);
+}
+
+OutFile::Status OutFile::writeFile(const std::string& _filepath,
+                                   const std::string& _text) {
+  OutFile outfile(_filepath);
+  return outfile.write(_text);
 }
 
 }  // namespace fio
