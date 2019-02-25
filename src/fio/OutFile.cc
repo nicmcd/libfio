@@ -70,9 +70,13 @@ OutFile::Status OutFile::write(const std::string& _text) {
   size_t len = _text.size();
 
   if (compress_) {
-    assert(gzwrite(gzFile_, cstr, len) == (s64)len);
+    s64 wlen = gzwrite(gzFile_, cstr, len);
+    (void)wlen;
+    assert(wlen == (s64)len);
   } else {
-    assert(fwrite(cstr, sizeof(char), len, regFile_) == len);
+    u64 wlen = fwrite(cstr, sizeof(char), len, regFile_);
+    (void)wlen;
+    assert(wlen == len);
   }
 
   return OutFile::Status::OK;
