@@ -38,7 +38,7 @@ http_archive(
   build_file = "@zlib_build//file:downloaded",
 )
 
-hash = "6783002"
+hash = "ef2951d"
 http_archive(
   name = "libprim",
   urls = ["https://github.com/nicmcd/libprim/tarball/" + hash],
