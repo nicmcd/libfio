@@ -30,34 +30,33 @@
  */
 #include "fio/OutFile.h"
 
-#include <prim/prim.h>
-
 #include <cassert>
+
+#include "prim/prim.h"
 
 namespace fio {
 
-OutFile::OutFile(const char* _filepath)
-    : OutFile(std::string(_filepath)) {}
+OutFile::OutFile(const char* _filepath) : OutFile(std::string(_filepath)) {}
 
 OutFile::OutFile(const std::string& _filepath) {
   u64 namelen = _filepath.size();
   assert(namelen > 0);
-  compress_ = _filepath.size() >= 3 && _filepath.substr(namelen-3) == ".gz";
+  compress_ = _filepath.size() >= 3 && _filepath.substr(namelen - 3) == ".gz";
 
   if (compress_) {
-    gzFile_ = gzopen(_filepath.c_str(), "wb");
-    assert(gzFile_ != nullptr);
+    gz_file_ = gzopen(_filepath.c_str(), "wb");
+    assert(gz_file_ != nullptr);
   } else {
-    regFile_ = fopen(_filepath.c_str(), "wb");
-    assert(regFile_ != nullptr);
+    reg_file_ = fopen(_filepath.c_str(), "wb");
+    assert(reg_file_ != nullptr);
   }
 }
 
 OutFile::~OutFile() {
   if (compress_) {
-    gzclose(gzFile_);
+    gzclose(gz_file_);
   } else {
-    fclose(regFile_);
+    fclose(reg_file_);
   }
 }
 
@@ -70,10 +69,10 @@ OutFile::Status OutFile::write(const std::string& _text) {
   size_t len = _text.size();
 
   if (compress_) {
-    s64 wlen = gzwrite(gzFile_, cstr, len);
+    s64 wlen = gzwrite(gz_file_, cstr, len);
     assert(wlen == (s64)len);
   } else {
-    u64 wlen = fwrite(cstr, sizeof(char), len, regFile_);
+    u64 wlen = fwrite(cstr, sizeof(char), len, reg_file_);
     assert(wlen == len);
   }
 

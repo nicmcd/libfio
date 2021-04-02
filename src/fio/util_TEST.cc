@@ -31,13 +31,12 @@
 #include "fio/util_TEST.h"
 
 #include <cstdio>
-
-#include <fstream>  // NOLINT
+#include <fstream>   // NOLINT
 #include <iostream>  // NOLINT
 #include <string>
 
 bool exists(const char* _filepath) {
-  if (FILE *file = fopen(_filepath, "r")) {
+  if (FILE* file = fopen(_filepath, "r")) {
     fclose(file);
     return true;
   } else {

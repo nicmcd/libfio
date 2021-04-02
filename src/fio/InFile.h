@@ -31,12 +31,12 @@
 #ifndef FIO_INFILE_H_
 #define FIO_INFILE_H_
 
-#include <prim/prim.h>
-#include <zlib.h>
-
+#include <queue>
 #include <sstream>
 #include <string>
-#include <queue>
+
+#include "prim/prim.h"
+#include "zlib/zlib.h"
 
 namespace fio {
 
@@ -45,31 +45,28 @@ const u64 kDefaultBlockSize = 8192;
 
 class InFile {
  public:
-  enum class Status : u8 {OK, END, ERROR};
+  enum class Status : u8 { OK, END, ERROR };
 
-  InFile(const char* _filepath,
-         char _delim = kDefaultDelim,
-         u64 _blockSize = kDefaultBlockSize);
-  InFile(const std::string& _filepath,
-         char _delim = kDefaultDelim,
-         u64 _blockSize = kDefaultBlockSize);
+  InFile(const char* _filepath, char _delim = kDefaultDelim,
+         u64 _block_size = kDefaultBlockSize);
+  InFile(const std::string& _filepath, char _delim = kDefaultDelim,
+         u64 _block_size = kDefaultBlockSize);
   virtual ~InFile();
 
   bool compressed() const;
   Status getLine(std::string* _line, bool _keepDelim = false);
 
-  static InFile::Status readFile(const char* _filepath,
-                                 std::string* _text);
+  static InFile::Status readFile(const char* _filepath, std::string* _text);
   static InFile::Status readFile(const std::string& _filepath,
                                  std::string* _text);
 
  private:
   bool compress_;
   bool stdin_;
-  FILE* regFile_;
-  gzFile gzFile_;
+  FILE* reg_file_;
+  gzFile gz_file_;
   const char delim_;
-  const u64 blockSize_;
+  const u64 block_size_;
   char* buf_;
   bool eof_;
   std::stringstream stream_;

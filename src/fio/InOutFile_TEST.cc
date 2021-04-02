@@ -48,8 +48,7 @@ TEST(InOutFile, bidir) {
     contents += kContents;
   }
 
-  std::vector<std::string> filenames({
-      "/tmp/myfile.txt", "/tmp/myfile.txt.gz"});
+  std::vector<std::string> filenames({"/tmp/myfile.txt", "/tmp/myfile.txt.gz"});
   for (std::string& filename : filenames) {
     // write to file
     fio::OutFile::Status osts = fio::OutFile::writeFile(filename, contents);

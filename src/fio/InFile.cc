@@ -30,26 +30,26 @@
  */
 #include "fio/InFile.h"
 
-#include <prim/prim.h>
-
 #include <cassert>
 #include <cerrno>
 #include <cstring>
 
+#include "prim/prim.h"
+
 namespace fio {
 
-InFile::InFile(const char* _filepath, char _delim, u64 _blockSize)
-    : InFile(std::string(_filepath), _delim, _blockSize) {}
+InFile::InFile(const char* _filepath, char _delim, u64 _block_size)
+    : InFile(std::string(_filepath), _delim, _block_size) {}
 
-InFile::InFile(const std::string& _filepath, char _delim, u64 _blockSize)
-    : delim_(_delim), blockSize_(_blockSize) {
+InFile::InFile(const std::string& _filepath, char _delim, u64 _block_size)
+    : delim_(_delim), block_size_(_block_size) {
   u64 namelen = _filepath.size();
   assert(namelen > 0);
-  compress_ = _filepath.size() >= 3 && _filepath.substr(namelen-3) == ".gz";
+  compress_ = _filepath.size() >= 3 && _filepath.substr(namelen - 3) == ".gz";
 
   if (compress_) {
-    gzFile_ = gzopen(_filepath.c_str(), "rb");
-    if (!gzFile_) {
+    gz_file_ = gzopen(_filepath.c_str(), "rb");
+    if (!gz_file_) {
       fprintf(stderr, "gzopen of %s failed: %s.\n", _filepath.c_str(),
               strerror(errno));
       assert(false);
@@ -57,10 +57,10 @@ InFile::InFile(const std::string& _filepath, char _delim, u64 _blockSize)
   } else {
     stdin_ = _filepath == "-";
     if (stdin_) {
-      regFile_ = stdin;
+      reg_file_ = stdin;
     } else {
-      regFile_ = fopen(_filepath.c_str(), "rb");
-      if (!regFile_) {
+      reg_file_ = fopen(_filepath.c_str(), "rb");
+      if (!reg_file_) {
         fprintf(stderr, "fopen of %s failed: %s.\n", _filepath.c_str(),
                 strerror(errno));
         assert(false);
@@ -68,16 +68,16 @@ InFile::InFile(const std::string& _filepath, char _delim, u64 _blockSize)
     }
   }
 
-  buf_ = new char[blockSize_ + 1];
-  buf_[blockSize_] = '\0';
+  buf_ = new char[block_size_ + 1];
+  buf_[block_size_] = '\0';
   eof_ = false;
 }
 
 InFile::~InFile() {
   if (compress_) {
-    gzclose(gzFile_);
+    gzclose(gz_file_);
   } else if (!stdin_) {
-    fclose(regFile_);
+    fclose(reg_file_);
   }
   delete[] buf_;
 }
@@ -118,12 +118,12 @@ InFile::Status InFile::getLine(std::string* _line, bool _keepDelim) {
     // read data from file
     u64 read;
     if (compress_) {
-      s64 bytesRead = gzread(gzFile_, buf_, blockSize_);
-      assert(bytesRead > 0 || (bytesRead == 0 && gzeof(gzFile_)));
+      s64 bytesRead = gzread(gz_file_, buf_, block_size_);
+      assert(bytesRead > 0 || (bytesRead == 0 && gzeof(gz_file_)));
       read = (u64)bytesRead;
     } else {
-      u64 bytesRead = fread(buf_, 1, blockSize_, regFile_);
-      assert(bytesRead > 0 || feof(regFile_));
+      u64 bytesRead = fread(buf_, 1, block_size_, reg_file_);
+      assert(bytesRead > 0 || feof(reg_file_));
       read = bytesRead;
     }
 

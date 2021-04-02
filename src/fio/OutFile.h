@@ -31,16 +31,16 @@
 #ifndef FIO_OUTFILE_H_
 #define FIO_OUTFILE_H_
 
-#include <prim/prim.h>
-#include <zlib.h>
-
 #include <string>
+
+#include "prim/prim.h"
+#include "zlib/zlib.h"
 
 namespace fio {
 
 class OutFile {
  public:
-  enum class Status : u8 {OK, ERROR};
+  enum class Status : u8 { OK, ERROR };
 
   explicit OutFile(const char* _filepath);
   explicit OutFile(const std::string& _filepath);
@@ -56,8 +56,8 @@ class OutFile {
 
  private:
   bool compress_;
-  FILE* regFile_;
-  gzFile gzFile_;
+  FILE* reg_file_;
+  gzFile gz_file_;
 };
 
 }  // namespace fio

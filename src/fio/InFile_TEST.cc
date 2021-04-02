@@ -30,9 +30,8 @@
  */
 #include "fio/InFile.h"
 
-#include <gtest/gtest.h>
-
 #include "fio/util_TEST.h"
+#include "gtest/gtest.h"
 
 TEST(InFile, compressedTest) {
   std::string fr = "/tmp/myoutfile.txt";
@@ -73,11 +72,11 @@ TEST(InFile, compressedTest) {
   ASSERT_FALSE(exists(fc.c_str()));
 }
 
-void infileComparisionTest(const char* _regName, bool _compress,
-                           const std::string& _contents, u64 _blockSize,
+void infileComparisionTest(const char* _reg_name, bool _compress,
+                           const std::string& _contents, u64 _block_size,
                            const std::vector<std::string>& _lines,
                            bool _verbose = false) {
-  std::string fr = _regName;
+  std::string fr = _reg_name;
   std::string fc = fr + ".gz";
   fio::InFile* infile;
 
@@ -91,7 +90,7 @@ void infileComparisionTest(const char* _regName, bool _compress,
   ASSERT_TRUE(exists(fc.c_str()));
 
   std::string fi = _compress ? fc : fr;
-  infile = new fio::InFile(fi.c_str(), '\n', _blockSize);
+  infile = new fio::InFile(fi.c_str(), '\n', _block_size);
   ASSERT_EQ(infile->compressed(), _compress);
   ASSERT_TRUE(exists(fr.c_str()));
   ASSERT_TRUE(exists(fc.c_str()));
@@ -130,47 +129,40 @@ void infileComparisionTest(const char* _regName, bool _compress,
 
 TEST(InFile, single) {
   for (u8 compress = 0; compress < 1; compress++) {
-    for (u64 blockSize = 10; blockSize < 11; blockSize++) {
+    for (u64 block_size = 10; block_size < 11; block_size++) {
       infileComparisionTest(
-          "/tmp/myoutfile.txt",
-          compress,
-          "hello\nworld\n\n\ntail",
-          blockSize,
-          std::vector<std::string>({"hello", "world", "", "", "tail"}),
-          false);
+          "/tmp/myoutfile.txt", compress, "hello\nworld\n\n\ntail", block_size,
+          std::vector<std::string>({"hello", "world", "", "", "tail"}), false);
     }
   }
 }
 
 TEST(InFile, simple) {
   for (u8 compress = 0; compress < 2; compress++) {
-    for (u64 blockSize = 10; blockSize < 123; blockSize++) {
+    for (u64 block_size = 10; block_size < 123; block_size++) {
       infileComparisionTest(
-          "/tmp/myoutfile.txt",
-          compress,
-          "hello\nworld\n\n\ntail",
-          blockSize,
+          "/tmp/myoutfile.txt", compress, "hello\nworld\n\n\ntail", block_size,
           std::vector<std::string>({"hello", "world", "", "", "tail"}));
     }
   }
 }
 
 TEST(InFile, complex) {
-  for (u8 compress = 0; compress < 1/*2*/; compress++) {
-    for (u64 blockSize = 100; blockSize < 101/*231*/; blockSize++) {
+  for (u8 compress = 0; compress < 1 /*2*/; compress++) {
+    for (u64 block_size = 100; block_size < 101 /*231*/; block_size++) {
       infileComparisionTest(
-          "/tmp/myoutfile.txt",
-          compress,
+          "/tmp/myoutfile.txt", compress,
           "this is a bigger example        \n"
           "      I love white    space in weird locations    \n"
           "\n"
           "   \n"
           "\n"
           "    ",
-          blockSize,
-          std::vector<std::string>({"this is a bigger example        ",
-                  "      I love white    space in weird locations    ",
-                  "", "   ", "", "    "}));
+          block_size,
+          std::vector<std::string>(
+              {"this is a bigger example        ",
+               "      I love white    space in weird locations    ", "", "   ",
+               "", "    "}));
     }
   }
 }

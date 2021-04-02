@@ -30,9 +30,8 @@
  */
 #include "fio/OutFile.h"
 
-#include <gtest/gtest.h>
-
 #include "fio/util_TEST.h"
+#include "gtest/gtest.h"
 
 TEST(OutFile, compressedTest) {
   const char* f;
