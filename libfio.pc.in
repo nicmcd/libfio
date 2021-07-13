@@ -1,0 +1,14 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+datarootdir = ${prefix}/share
+datadir=${prefix}/share
+
+Name: libfio
+Description: A C++ library for simple input reading and simple output file writing with compression
+URL: https://github.com/nicmcd/libfio
+Version: 0.1.0
+Requires: zlib,libprim
+Libs: -L${libdir} -lfio
+Cflags: -I${includedir}
