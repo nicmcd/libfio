@@ -10,5 +10,5 @@ Description: A C++ library for simple input reading and simple output file writi
 URL: https://github.com/nicmcd/libfio
 Version: 0.1.0
 Requires: zlib,libprim
-Libs: -L${libdir} -lfio
+Libs: -L${libdir} -lfio 
 Cflags: -I${includedir}
