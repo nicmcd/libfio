@@ -1,10 +1,10 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
-release = "1.10.0"
+release = "1.13.0"
 http_archive(
   name = "googletest",
-  urls = ["https://github.com/google/googletest/archive/release-" + release + ".tar.gz"],
-  strip_prefix = "googletest-release-" + release,
+  urls = ["https://github.com/google/googletest/archive/refs/tags/v" + release + ".tar.gz"],
+  strip_prefix = "googletest-" + release,
 )
 
 http_file(
@@ -30,7 +30,7 @@ http_file(
   urls = ["https://raw.githubusercontent.com/nicmcd/pkgbuild/master/zlib.BUILD"],
 )
 
-version = "1.2.12"
+version = "1.2.13"
 http_archive(
   name = "zlib",
   urls = ["https://www.zlib.net/zlib-" + version + ".tar.gz"],
@@ -38,7 +38,7 @@ http_archive(
   build_file = "@zlib_build//file:downloaded",
 )
 
-hash = "f564c5c"
+hash = "068f9ce"
 http_archive(
   name = "libprim",
   urls = ["https://github.com/nicmcd/libprim/tarball/" + hash],
